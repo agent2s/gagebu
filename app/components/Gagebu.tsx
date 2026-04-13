@@ -162,29 +162,38 @@ export default function Gagebu() {
     return Object.values(map).sort((a, b) => a.month.localeCompare(b.month)).slice(-6);
   }, [entries]);
 
-  // 공통 input/select 스타일
-  const inputCls = "flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100";
-  const cardCls  = "bg-white dark:bg-gray-800 rounded-xl shadow p-5";
+  const inputCls = "flex-1 border rounded px-3 py-2 text-sm focus:outline-none bg-[#1a1710] border-[#c9a84c]/30 focus:border-[#c9a84c] text-[#f0e6c8] placeholder-[#6b5f3e]";
+  const cardCls  = "bg-[#12110e] border border-[#c9a84c]/20 rounded-sm shadow-lg p-5";
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-4 transition-colors">
+    <div className="min-h-screen py-10 px-4 transition-colors" style={{ background: "linear-gradient(135deg, #0a0906 0%, #13110c 50%, #0f0d09 100%)" }}>
 
       {/* 헤더 */}
       <div className="max-w-2xl mx-auto flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">가계부</h1>
+        <div>
+          <p className="text-[#c9a84c] text-xs tracking-[0.3em] uppercase mb-1">Maison Privée</p>
+          <h1 className="text-3xl font-light tracking-widest text-[#f0e6c8]">가계부</h1>
+        </div>
         <button
           onClick={toggleDark}
-          className="w-10 h-10 rounded-full bg-white dark:bg-gray-700 shadow flex items-center justify-center text-xl transition-colors"
-          title="다크모드 전환"
+          className="w-10 h-10 border border-[#c9a84c]/40 hover:border-[#c9a84c] flex items-center justify-center text-lg transition-colors text-[#c9a84c]"
+          title="테마 전환"
         >
-          {dark ? "☀️" : "🌙"}
+          {dark ? "○" : "●"}
         </button>
+      </div>
+
+      {/* 구분선 */}
+      <div className="max-w-2xl mx-auto mb-8 flex items-center gap-3">
+        <div className="flex-1 h-px bg-[#c9a84c]/20" />
+        <span className="text-[#c9a84c]/50 text-xs tracking-widest">✦</span>
+        <div className="flex-1 h-px bg-[#c9a84c]/20" />
       </div>
 
       {/* 입력 / 수정 폼 */}
       <div className={`${cardCls} max-w-2xl mx-auto mb-6`}>
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">
-          {editId !== null ? "✏️ 내역 수정" : "내역 추가"}
+        <h2 className="text-xs tracking-[0.2em] uppercase text-[#c9a84c]/70 mb-4">
+          {editId !== null ? "Edit Entry" : "New Entry"}
         </h2>
         <div className="flex flex-wrap gap-3">
           <input type="date" value={form.date} onChange={(e) => setField("date", e.target.value)} className={inputCls} />
@@ -198,13 +207,13 @@ export default function Gagebu() {
             {CATEGORIES[form.type].map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
-        <div className="flex gap-2 mt-3">
-          <button onClick={submitForm} className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg text-sm transition-colors">
-            {editId !== null ? "수정 완료" : "추가"}
+        <div className="flex gap-2 mt-4">
+          <button onClick={submitForm} className="border border-[#c9a84c] text-[#c9a84c] hover:bg-[#c9a84c] hover:text-[#0a0906] font-light tracking-widest px-6 py-2 text-sm transition-all">
+            {editId !== null ? "CONFIRM" : "ADD"}
           </button>
           {editId !== null && (
-            <button onClick={cancelEdit} className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-semibold px-5 py-2 rounded-lg text-sm transition-colors">
-              취소
+            <button onClick={cancelEdit} className="border border-[#6b5f3e] text-[#6b5f3e] hover:border-[#c9a84c]/50 px-6 py-2 text-sm tracking-widest transition-all">
+              CANCEL
             </button>
           )}
         </div>
@@ -215,43 +224,42 @@ export default function Gagebu() {
         <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} className={inputCls} style={{ flex: "none" }}>
           {months.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
-        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="검색 (내역, 카테고리)" className={inputCls} />
-        <button onClick={exportCSV} className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-          CSV 저장
+        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="검색" className={inputCls} />
+        <button onClick={exportCSV} className="border border-[#c9a84c]/40 hover:border-[#c9a84c] text-[#c9a84c]/70 hover:text-[#c9a84c] px-4 py-2 text-xs tracking-widest transition-all">
+          EXPORT
         </button>
       </div>
 
       {/* 요약 카드 */}
       <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mb-6">
-        <div className={`${cardCls} text-center`}>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mb-1">수입</p>
-          <p className="text-xl font-bold text-green-500">{fmt(totalIncome)}</p>
-        </div>
-        <div className={`${cardCls} text-center`}>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mb-1">지출</p>
-          <p className="text-xl font-bold text-red-500">{fmt(totalExpense)}</p>
-        </div>
-        <div className={`${cardCls} text-center`}>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mb-1">잔액</p>
-          <p className={`text-xl font-bold ${balance >= 0 ? "text-blue-500" : "text-red-500"}`}>{fmt(balance)}</p>
-        </div>
+        {[
+          { label: "INCOME", value: fmt(totalIncome), color: "text-[#7ec8a0]" },
+          { label: "EXPENSE", value: fmt(totalExpense), color: "text-[#c87e7e]" },
+          { label: "BALANCE", value: fmt(balance), color: balance >= 0 ? "text-[#c9a84c]" : "text-[#c87e7e]" },
+        ].map(({ label, value, color }) => (
+          <div key={label} className={`${cardCls} text-center`}>
+            <p className="text-xs tracking-[0.2em] text-[#c9a84c]/50 mb-2">{label}</p>
+            <p className={`text-lg font-light ${color}`}>{value}</p>
+          </div>
+        ))}
       </div>
 
       {/* 월별 차트 */}
       {chartData.length > 0 && (
         <div className={`${cardCls} max-w-2xl mx-auto mb-6`}>
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4">월별 수입 / 지출</h2>
+          <h2 className="text-xs tracking-[0.2em] uppercase text-[#c9a84c]/70 mb-4">Monthly Overview</h2>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} barCategoryGap="30%">
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: dark ? "#9ca3af" : "#6b7280" }} />
-              <YAxis tickFormatter={(v) => (v / 10000).toFixed(0) + "만"} tick={{ fontSize: 11, fill: dark ? "#9ca3af" : "#6b7280" }} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6b5f3e" }} axisLine={{ stroke: "#c9a84c22" }} tickLine={false} />
+              <YAxis tickFormatter={(v) => (v / 10000).toFixed(0) + "만"} tick={{ fontSize: 10, fill: "#6b5f3e" }} axisLine={false} tickLine={false} />
               <Tooltip
                 formatter={(v) => fmt(Number(v))}
-                contentStyle={{ background: dark ? "#1f2937" : "#fff", border: "none", borderRadius: 8, color: dark ? "#f3f4f6" : "#111" }}
+                contentStyle={{ background: "#12110e", border: "1px solid #c9a84c33", borderRadius: 0, color: "#f0e6c8", fontSize: 12 }}
+                cursor={{ fill: "#c9a84c08" }}
               />
-              <Legend />
-              <Bar dataKey="수입" fill="#34d399" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="지출" fill="#f87171" radius={[4, 4, 0, 0]} />
+              <Legend wrapperStyle={{ fontSize: 11, color: "#6b5f3e" }} />
+              <Bar dataKey="수입" fill="#7ec8a0" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="지출" fill="#c87e7e" radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -259,30 +267,37 @@ export default function Gagebu() {
 
       {/* 거래 내역 */}
       <div className={`${cardCls} max-w-2xl mx-auto`}>
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4">
-          거래 내역{filtered.length > 0 && <span className="text-gray-300 dark:text-gray-600 font-normal"> ({filtered.length}건)</span>}
+        <h2 className="text-xs tracking-[0.2em] uppercase text-[#c9a84c]/70 mb-4">
+          Transactions{filtered.length > 0 && <span className="text-[#6b5f3e] normal-case tracking-normal font-normal"> · {filtered.length}건</span>}
         </h2>
         {filtered.length === 0 ? (
-          <p className="text-center text-gray-300 dark:text-gray-600 py-10">내역이 없습니다.</p>
+          <p className="text-center text-[#3d3527] py-10 text-sm tracking-widest">— NO RECORDS —</p>
         ) : (
-          <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+          <ul>
             {filtered.map((e) => (
-              <li key={e.id} className="flex items-center gap-3 py-3">
-                <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${e.type === "income" ? "bg-green-400" : "bg-red-400"}`} />
+              <li key={e.id} className="flex items-center gap-3 py-3 border-b border-[#c9a84c]/10 last:border-0">
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${e.type === "income" ? "bg-[#7ec8a0]" : "bg-[#c87e7e]"}`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-700 dark:text-gray-200 truncate">{e.desc}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">{e.category}</p>
+                  <p className="text-sm text-[#d4c49a] truncate font-light">{e.desc}</p>
+                  <p className="text-xs text-[#6b5f3e]">{e.category}</p>
                 </div>
-                <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">{e.date}</span>
-                <span className={`text-sm font-bold flex-shrink-0 ${e.type === "income" ? "text-green-500" : "text-red-500"}`}>
-                  {e.type === "income" ? "+" : "-"}{fmt(e.amount)}
+                <span className="text-xs text-[#4a4030] flex-shrink-0">{e.date}</span>
+                <span className={`text-sm font-light flex-shrink-0 ${e.type === "income" ? "text-[#7ec8a0]" : "text-[#c87e7e]"}`}>
+                  {e.type === "income" ? "+" : "−"}{fmt(e.amount)}
                 </span>
-                <button onClick={() => startEdit(e)} className="text-gray-300 hover:text-blue-400 text-sm transition-colors px-1">✏️</button>
-                <button onClick={() => deleteEntry(e.id)} className="text-gray-300 hover:text-red-400 text-sm transition-colors px-1">✕</button>
+                <button onClick={() => startEdit(e)} className="text-[#4a4030] hover:text-[#c9a84c] text-xs transition-colors px-1">✎</button>
+                <button onClick={() => deleteEntry(e.id)} className="text-[#4a4030] hover:text-[#c87e7e] text-xs transition-colors px-1">✕</button>
               </li>
             ))}
           </ul>
         )}
+      </div>
+
+      {/* 하단 장식 */}
+      <div className="max-w-2xl mx-auto mt-8 flex items-center gap-3">
+        <div className="flex-1 h-px bg-[#c9a84c]/10" />
+        <span className="text-[#c9a84c]/20 text-xs tracking-widest">✦</span>
+        <div className="flex-1 h-px bg-[#c9a84c]/10" />
       </div>
     </div>
   );
