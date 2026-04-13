@@ -10,6 +10,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { supabase } from "@/lib/supabase";
 
 type EntryType = "income" | "expense";
 
@@ -54,26 +55,42 @@ export default function Gagebu() {
   const [search, setSearch] = useState("");
   const [filterMonth, setFilterMonth] = useState(today().slice(0, 7));
   const [dark, setDark] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem("gagebu_v2");
-    if (saved) setEntries(JSON.parse(saved));
-
     const savedDark = localStorage.getItem("gagebu_dark") === "true";
     setDark(savedDark);
     document.documentElement.classList.toggle("dark", savedDark);
+
+    loadEntries();
   }, []);
+
+  async function loadEntries() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("entries")
+      .select("*")
+      .order("date", { ascending: false });
+    if (!error && data) {
+      setEntries(
+        data.map((r) => ({
+          id: r.id,
+          date: r.date,
+          desc: r.description,
+          amount: r.amount,
+          type: r.type as EntryType,
+          category: r.category,
+        }))
+      );
+    }
+    setLoading(false);
+  }
 
   function toggleDark() {
     const next = !dark;
     setDark(next);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("gagebu_dark", String(next));
-  }
-
-  function save(next: Entry[]) {
-    setEntries(next);
-    localStorage.setItem("gagebu_v2", JSON.stringify(next));
   }
 
   function setField<K extends keyof typeof EMPTY_FORM>(key: K, value: typeof EMPTY_FORM[K]) {
@@ -86,19 +103,37 @@ export default function Gagebu() {
     });
   }
 
-  function submitForm() {
+  async function submitForm() {
     const num = parseInt(form.amount);
     if (!form.date || !form.desc.trim() || !num || num <= 0) {
       alert("날짜, 내역, 금액을 올바르게 입력해주세요.");
       return;
     }
     if (editId !== null) {
-      save(entries.map((e) => e.id === editId ? { ...e, ...form, amount: num } : e));
+      const { error } = await supabase
+        .from("entries")
+        .update({
+          date: form.date,
+          description: form.desc,
+          amount: num,
+          type: form.type,
+          category: form.category,
+        })
+        .eq("id", editId);
+      if (error) { alert("수정 실패: " + error.message); return; }
       setEditId(null);
     } else {
-      save([...entries, { id: Date.now(), ...form, amount: num }]);
+      const { error } = await supabase.from("entries").insert({
+        date: form.date,
+        description: form.desc,
+        amount: num,
+        type: form.type,
+        category: form.category,
+      });
+      if (error) { alert("추가 실패: " + error.message); return; }
     }
     setForm(EMPTY_FORM);
+    await loadEntries();
   }
 
   function startEdit(e: Entry) {
@@ -112,9 +147,11 @@ export default function Gagebu() {
     setForm(EMPTY_FORM);
   }
 
-  function deleteEntry(id: number) {
+  async function deleteEntry(id: number) {
     if (!confirm("삭제할까요?")) return;
-    save(entries.filter((e) => e.id !== id));
+    const { error } = await supabase.from("entries").delete().eq("id", id);
+    if (error) { alert("삭제 실패: " + error.message); return; }
+    await loadEntries();
   }
 
   function exportCSV() {
@@ -270,7 +307,9 @@ export default function Gagebu() {
         <h2 className="text-xs tracking-[0.2em] uppercase text-[#c9a84c]/70 mb-4">
           Transactions{filtered.length > 0 && <span className="text-[#6b5f3e] normal-case tracking-normal font-normal"> · {filtered.length}건</span>}
         </h2>
-        {filtered.length === 0 ? (
+        {loading ? (
+          <p className="text-center text-[#3d3527] py-10 text-sm tracking-widest">— LOADING —</p>
+        ) : filtered.length === 0 ? (
           <p className="text-center text-[#3d3527] py-10 text-sm tracking-widest">— NO RECORDS —</p>
         ) : (
           <ul>
